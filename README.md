@@ -1,6 +1,7 @@
 # DictionaryOOP
-từ điển bài tập lớn 1 môn OOP
-Những chức năng của từ điển: 
+Từ điển bài tập lớn 1 môn OOP
+
+##Những chức năng của từ điển: 
 - Có mục tra cứu Anh-Việt và Việt-Anh
 - Có gợi ý từ khi tra cứu từ
 - Tính năng thêm, xóa, sửa từ (chưa hoàn thiện 100%)
@@ -8,13 +9,13 @@ Những chức năng của từ điển:
 - Có TextToSpeech
 
 
-Các bước cài đặt từ điển của nhóm em:
+##Các bước cài đặt từ điển của nhóm em:
 - Clone về từ github
 - Vào trong code -> hàm main -> thay đổi đường dẫn file E_V và V_E và fxml ( 2 file dữ liệu có sẵn trong package comps)
 - Giải nén thư mục freetts (tìm thấy trong thư mục comps) -> thêm vào thư viện của project từ điển
 - Chạy chương trình -  lưu ý cần có kết nối mạng để sử dụng API của Google.
 
-Hướng dẫn sử dụng các nút bấm của từ điển:
+##Hướng dẫn sử dụng các nút bấm của từ điển:
 - 2 tab E-V và V-E có 3 nút với các chức năng tìm kiếm từ file dữ liệu bên trên ( tương ứng với 2 nút search và tìm kiếm ở mỗi tab), nút sử dụng google API để dịch các từ không có sẵn trong từ điển hoặc câu ( tương ứng với 2 nút translate và dịch - chức năng cần sử dụng mạng ) và nút phát âm từ - câu ( ứng với 2 nút voice và phát âm)
 ![alt text](https://github.com/dieunq1001/DictionaryOOP/blob/main/search2.png?raw=true)
 - Tab Add dùng để thêm từ, có 2 textfield có ghi chú sẵn. Khi thêm từ có trong bộ nhớ từ điển thì sẽ có thông báo lỗi, không thì thông báo thành công. Sau khi thêm xong nếu thoát chương trình thì lần sau vào lại sẽ vẫn còn từ đó.
