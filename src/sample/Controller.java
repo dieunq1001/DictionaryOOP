@@ -7,12 +7,20 @@ import java.net.URLEncoder;
 import java.security.spec.RSAOtherPrimeInfo;
 import java.util.*;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 
 import static sample.Main.E_V_FILE_PATH;
 import static sample.Main.V_E_FILE_PATH;
@@ -24,6 +32,8 @@ public class Controller implements Initializable {
     public static ArrayList<Word> wordV = new ArrayList<Word>();
     private SortedSet<String> keywordE;
     private SortedSet<String> keywordV;
+    public static Map<String, String> dataE = new HashMap<>();
+    public static Map<String, String> dataV = new HashMap<>();
 
     private autoSuggest text;
 
@@ -73,7 +83,7 @@ public class Controller implements Initializable {
     @FXML
     private TextField TextRCW;
     @FXML
-    private TextField TextDef;
+    private TextArea TextDef;
     @FXML
     private Button checkAV;
     @FXML
@@ -105,6 +115,7 @@ public class Controller implements Initializable {
         text.keyW().addAll(getKeywordV());
     }
 
+    // TexttoSpeech
     @FXML
     private void TextSpeechE(ActionEvent event) {
         String s = TextE.getText();
@@ -119,34 +130,44 @@ public class Controller implements Initializable {
         tts.speech(s);
     }
 
+    // finding words from an already-read file
     @FXML
     private void findEng(ActionEvent event) {
         String s = TextE.getText();
         String mean = null;
+        Map<String, String> tem_data = new HashMap<>();
         for (int i = 0; i < wordE.size(); i++) {
             if (wordE.get(i).getWord().contentEquals(s)) {
                 mean = wordE.get(i).getDef();
+                dataE.put(wordE.get(i).getWord(),wordE.get(i).getDef());
+                tem_data.put(wordE.get(i).getWord(),wordE.get(i).getDef());
                 break;
             }
         }
-        WebEngine webEngine = webViewE.getEngine();
         webViewE.getEngine().loadContent(mean, "text/html");
+        Main.listViewH.getItems().addAll(tem_data.keySet());
+        tem_data.clear();
     }
 
     @FXML
     private void findVie(ActionEvent event) {
         String s = TextV.getText();
         String mean = null;
+        Map<String, String> tem_data = new HashMap<>();
         for (int i = 0; i < wordV.size(); i++) {
             if (wordV.get(i).getWord().contentEquals(s)) {
                 mean = wordV.get(i).getDef();
+                dataV.put(wordV.get(i).getWord(),wordV.get(i).getDef());
+                tem_data.put(wordV.get(i).getWord(),wordV.get(i).getDef());
                 break;
             }
         }
-        WebEngine webEngine = webViewV.getEngine();
         webViewV.getEngine().loadContent(mean, "text/html");
+        Main.listViewH.getItems().addAll(tem_data.keySet());
+        tem_data.clear();
     }
 
+    // adding word to dictionary permanently
     @FXML
     private void setAddVieEng(ActionEvent event) {
         String addw = TextAdd.getText();
@@ -158,20 +179,19 @@ public class Controller implements Initializable {
                 break;
             }
         }
-        if(isFound == true) {
+        if(isFound) {
             showAlertFail();
             return;
         }
         try {
             writeToFileVE writeVE = new writeToFileVE(addw, meanw);
-            Main.readDataVE();
+            Word w = new Word(addw,"<i>"+addw+"</i><br/><ul><li><font color='#cc0000'><b>"+meanw+"</b></font></li></ul></html>"+"\n");
+            wordV.add(w);
             keywordV.add(addw);
             text = new autoSuggest(TextV);
             text.keyW().addAll(getKeywordV());
             showAlertSuccessful();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -187,24 +207,24 @@ public class Controller implements Initializable {
                 break;
             }
         }
-        if(isFound == true) {
+        if(isFound) {
             showAlertFail();
             return;
         }
         try {
             writeToFileEV writeEV = new writeToFileEV(addw, meanw);
-            Main.readDataEV();
+            Word w = new Word(addw,"<i>"+addw+"</i><br/><ul><li><font color='#cc0000'><b>"+meanw+"</b></font></li></ul></html>"+"\n");
+            wordE.add(w);
             keywordE.add(addw);
             text = new autoSuggest(TextE);
             text.keyW().addAll(getKeywordE());
             showAlertSuccessful();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
+    // API google script
     @FXML
     public void setApiTestE(ActionEvent event) throws IOException {
         String s = TextE.getText();
@@ -219,6 +239,7 @@ public class Controller implements Initializable {
         webViewV.getEngine().loadContent(translate("vi","en",s), "text/html");
     }
 
+    // check if the word is in dictionary
     @FXML
     public void setCheckAV(ActionEvent event) {
         String wordCheck = TextRCW.getText();
@@ -229,7 +250,7 @@ public class Controller implements Initializable {
                 break;
             }
         }
-        if(isFound == false) {
+        if(!isFound) {
             showAlertNull();
             return;
         }
@@ -253,7 +274,7 @@ public class Controller implements Initializable {
                 break;
             }
         }
-        if(isFound == false) {
+        if(!isFound) {
             showAlertNull();
             return;
         }
@@ -267,6 +288,7 @@ public class Controller implements Initializable {
         TextDef.appendText(def);
     }
 
+    // delete the word but not permanent
     @FXML
     public void deleteAV(ActionEvent event) {
         String wordCheck = TextRCW.getText();
@@ -279,12 +301,15 @@ public class Controller implements Initializable {
                 break;
             }
         }
-        if(isFound == false) {
+        if(!isFound) {
             showAlertNull();
             return;
         }
         else {
             wordE.remove(index);
+            keywordE.remove(wordCheck);
+            text = new autoSuggest(TextE);
+            text.keyW().addAll(getKeywordE());
             showAlertRemove();
         }
     }
@@ -301,16 +326,20 @@ public class Controller implements Initializable {
                 break;
             }
         }
-        if(isFound == false) {
+        if(!isFound) {
             showAlertNull();
             return;
         }
         else {
             wordV.remove(index);
+            keywordV.remove(wordCheck);
+            text = new autoSuggest(TextV);
+            text.keyW().addAll(getKeywordV());
             showAlertRemove();
         }
     }
 
+    // change the definition of the word included html
     @FXML
     public void setChangeDefE(ActionEvent event) {
         String newdef = TextDef.getText();

@@ -20,6 +20,4 @@ public class writeToFileEV {
             printWriter.close();
         }
     }
-
-
 }
